@@ -25,3 +25,25 @@ terraform destroy -var-file 0_production.tfvars --auto-approve
 # $ terraform init -backend-config="backend-config-file-path"
 
 
+
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "AllowPublicRead",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "*"
+            },
+
+            "Action": [
+              "s3:GetObject"
+            ],
+            "Resource": [
+                "Resource": "*"
+            ]
+        }
+    ]
+}
+EOF
