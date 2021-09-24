@@ -34,6 +34,12 @@ terraform {
     # explicitly copy it to another bucket located in a different region.
     region = "us-east-1"
 
+    # Code to lock the remote .tfstate file
+    # To lock the remote state file in S3 bucket , create a dynamodb table
+    # and create a primary key 'LockID'
+    # when creating the Dynamp DB table, make sure to create partition key as "LockID".
+    dynamodb_table = "daniel-terraform-state-lock"
+
   }
 }
 
