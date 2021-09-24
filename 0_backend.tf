@@ -17,14 +17,14 @@ terraform {
     bucket = "daniel-dev-tfstate-09-23-2021"
 
     #  bucket = "Mary-dev=tfstate-04/terraform.tfstate"
-    
+
     # A bucket is a container (web folder) for objects (files) stored in Amazon S3. 
     # Files are identified by a key (filename). 
     # and each object is identified by a unique user-specified key (filename).
 
     # bucket= folder && file_name=key && file_Content(the file itself) = object
 
-    key    = "infraLayer/infrastructure.tfstate"
+    key = "infraLayer/infrastructure.tfstate"
 
     # Even though the namespace for Amazon S3 buckets is global,
     # each Amazon S3 bucket is created in a specific region that you choose.

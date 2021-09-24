@@ -36,16 +36,16 @@ resource "aws_iam_role_policy" "s3-bucket-role-policy" {
   name = "s3-mybucket-role-policy"
   role = aws_iam_role.s3-bucket-role.id
 
-# iam role with s3 read only access for all resources 
+  # iam role with s3 read only access for all resources 
 
-/*
+  /*
 Error: Error putting IAM role policy s3-mybucket-role-policy: 
 MalformedPolicyDocument: Policy document should not specify a principal.
 */
 
-# ‘Action’ – ‘s3:GetObject’ aka Get a file (in S3-speak all files are ‘objects’); 
+  # ‘Action’ – ‘s3:GetObject’ aka Get a file (in S3-speak all files are ‘objects’); 
 
-/*
+  /*
 "Resource": :The "Which" aka `Resource`
 Which Resource can our Principal take Action on? It's our target. The most general target of all is just:
 "Resource": "*"  This means everything. Apply this to EVERYTHING.

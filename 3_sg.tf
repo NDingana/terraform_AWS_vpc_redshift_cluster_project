@@ -15,10 +15,10 @@ resource "aws_security_group" "ec2_public_security_group" {
   */
 
   ingress {
-    from_port       = 5439
-    to_port         = 5439
-    protocol        = "tcp"
-   cidr_blocks = ["0.0.0.0/0"]
+    from_port   = 5439
+    to_port     = 5439
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
 
