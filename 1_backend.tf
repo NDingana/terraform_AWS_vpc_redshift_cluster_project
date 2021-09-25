@@ -7,16 +7,11 @@ IF terraform manages them, it can easilty be accidentally deleted, which will be
 Always use partition key as lock ID for dynamoDn
 */
 
-
 terraform {
   backend "s3" {
-    #Code for uploading .tfstate to Remote s3 bucket
 
-    #Name of s3 bucket you created
-
+    #Name of s3 bucket you created in console
     bucket = "daniel-dev-tfstate-09-23-2021"
-
-    #  bucket = "Mary-dev=tfstate-04/terraform.tfstate"
 
     # A bucket is a container (web folder) for objects (files) stored in Amazon S3. 
     # Files are identified by a key (filename). 
@@ -28,13 +23,8 @@ terraform {
 
     # Even though the namespace for Amazon S3 buckets is global,
     # each Amazon S3 bucket is created in a specific region that you choose.
-    # This lets you control where your data is stored.
-    # You control the location of your data; 
-    # data in an Amazon S3 bucket is stored in that region unless you 
-    # explicitly copy it to another bucket located in a different region.
     region = "us-east-1"
 
-    # Code to lock the remote .tfstate file
     # To lock the remote state file in S3 bucket , create a dynamodb table
     # and create a primary key 'LockID'
     # when creating the Dynamp DB table, make sure to create partition key as "LockID".
@@ -42,5 +32,3 @@ terraform {
 
   }
 }
-
-#https://www.terraform.io/docs/backends/types/s3.html
