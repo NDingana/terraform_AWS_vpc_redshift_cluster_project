@@ -16,7 +16,7 @@ resource "aws_instance" "public_ec2_in_public_subnet_1" {
   # role:
   iam_instance_profile = aws_iam_instance_profile.s3_readOnly_instance_profile.name
 
-  # create a test server to see if it is reachable on port 5439
+  # create a test server to see if it is reachable on port 80
   user_data = <<-EOF
                 #!/bin/bash
                 sudo yum update -y
