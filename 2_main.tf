@@ -13,7 +13,7 @@ resource "aws_vpc" "mainvpc" {
   enable_dns_hostnames = true
 
   tags = {
-    Name = "VPC_TF"
+    Name = "redshift_vpc_TF"
   }
 
 }
@@ -126,9 +126,9 @@ resource "aws_route_table_association" "public_subnet_3_association" {
 ############################## ec2_public_security_group ####################################################
 #############################################################################################################
 
-resource "aws_security_group" "ec2_public_security_group" {
+resource "aws_security_group" "redshift_security_group" {
 
-  description = "Internet reaching access for public ec2s"
+  description = "redshift_security_group"
   vpc_id      = aws_vpc.mainvpc.id
 
   ingress {
@@ -138,15 +138,11 @@ resource "aws_security_group" "ec2_public_security_group" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  egress {
-    from_port   = 0
-    protocol    = "-1"
-    to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+  # egress: "By default, security groups allow all outbound traffic.""
+  # https://docs.aws.amazon.com/vpc/latest/userguide/VPC_SecurityGroups.html
 
   tags = {
-    Name = "ec2_public_security_group"
+    Name = "redshift-sg"
   }
 
   lifecycle {
@@ -160,11 +156,9 @@ resource "aws_security_group" "ec2_public_security_group" {
 ############### aws_iam_role, aws_iam_role_policy_attachment and aws_iam_instance_profile  ##################
 #############################################################################################################
 
-# Let’s create a role now that we want to attach to our EC2 instances:
-# You create a s3_bucket_role and assign the role to an EC2 instance at boot time
-# You give the role the permissions for read only access for all resources 
-resource "aws_iam_role" "s3_bucket_role" {
-  name               = "s3_bucket_role"
+# Let’s create a role now that we want to attach to our redshift databases:
+# You create a aws_iam_role and assign the role to an redshift databases at boot time
+resource "aws_iam_role" "redshift_role" {
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -172,7 +166,7 @@ resource "aws_iam_role" "s3_bucket_role" {
     {
       "Action": "sts:AssumeRole",
       "Principal": {
-        "Service": "ec2.amazonaws.com"
+        "Service": "redshift.amazonaws.com"
       },
       "Effect": "Allow",
       "Sid": ""
@@ -181,6 +175,10 @@ resource "aws_iam_role" "s3_bucket_role" {
 }
 EOF
 
+  tags = {
+    tag-key = "redshift-role"
+  }
+
 }
 
 # Now we need to add some permissions using a policy document:
@@ -188,8 +186,8 @@ EOF
 # by default it will allow reads only on all s3 objects by all aws resources
 # json can be viewed at link below for details
 # https://gist.github.com/bernadinm/6f68bfdd015b3f3e0a17b2f00c9ea3f8
-resource "aws_iam_role_policy_attachment" "s3-policy-attach" {
-  role       = aws_iam_role.s3_bucket_role.name
+resource "aws_iam_role_policy_attachment" "s3_ReadOnly_access_policy" {
+  role       = aws_iam_role.redshift_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
 }
 
@@ -199,7 +197,40 @@ resource "aws_iam_role_policy_attachment" "s3-policy-attach" {
 # will have the access to read all s3 objects
 resource "aws_iam_instance_profile" "s3_readOnly_instance_profile" {
   name = "s3_readOnly_instance_profile"
-  role = aws_iam_role.s3_bucket_role.name
+  role = aws_iam_role.redshift_role.name
 }
 
 
+#############################################################################################################
+############################## aws_redshift_subnet_group ####################################################
+#############################################################################################################
+resource "aws_redshift_subnet_group" "redshift_subnet_group" {
+  name       = "redshift-subnet-group"
+  subnet_ids = [aws_subnet.public_subnet_1.id, aws_subnet.public_subnet_2.id, aws_subnet.public_subnet_3.id]
+  tags = {
+    Name = "redshift_subnet_group"
+  }
+}
+
+
+#############################################################################################################
+############################## aws_redshift_cluster ####################################################
+#############################################################################################################
+resource "aws_redshift_cluster" "default" {
+  cluster_identifier        = "sample-cluster"
+  database_name             = "samplecluster"
+  master_username           = "sampleuser"
+  master_password           = "saMplepswd2021"
+  node_type                 = "dc2.large"
+  cluster_type              = "single-node"
+  cluster_subnet_group_name = aws_redshift_subnet_group.redshift_subnet_group.id
+  skip_final_snapshot       = true
+  iam_roles                 = [aws_iam_role.redshift_role.arn]
+
+  depends_on = [
+    aws_vpc.mainvpc,
+    aws_security_group.redshift_security_group,
+    aws_redshift_subnet_group.redshift_subnet_group,
+    aws_iam_role.redshift_role
+  ]
+}
