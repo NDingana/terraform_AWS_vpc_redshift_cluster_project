@@ -82,6 +82,8 @@ resource "aws_internet_gateway" "IGW_TF" {
 
 ######################################### public-route-table ################################################
 #  All three public subnets will share a single route table, 
+
+
 resource "aws_route_table" "public_route_table" {
   vpc_id = aws_vpc.mainvpc.id
 
@@ -100,6 +102,17 @@ resource "aws_route_table" "public_route_table" {
   depends_on = [aws_vpc.mainvpc, aws_internet_gateway.IGW_TF]
 }
 
+/*
+On VPC creation, the AWS API always creates an initial Main Route Table. 
+This resource records the ID of that Route Table under original_route_table_id. 
+The "Delete" action for a main_route_table_association consists of 
+resetting this original table as the Main Route Table for the VPC. 
+*/
+
+resource "aws_main_route_table_association" "main_RT_Association" {
+  vpc_id = aws_vpc.mainvpc.id
+  route_table_id = aws_route_table.public_route_table.id
+}
 #############################################################################################################
 ############################## Three public-route-association ###############################################
 #############################################################################################################
